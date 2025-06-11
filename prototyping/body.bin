@@ -1,0 +1,12 @@
+------geckoformboundary195a902ef768c3f68ad76e7c158a00bf
+Content-Disposition: form-data; name="submission[method]"
+
+upload
+------geckoformboundary195a902ef768c3f68ad76e7c158a00bf
+Content-Disposition: form-data; name="authenticity_token"
+
+H8jmtiwS15wdo0+yEhlOCDSPlH7c28zeYls3h3tNO23PWkhpkV/tEYPjQupHK6Ehy3fTBExLGCU0xK79QqCN3Q==
+------geckoformboundary195a902ef768c3f68ad76e7c158a00bf
+Content-Disposition: form-data; name="submission[files][]"; filename="single-cell.el.zip"
+Content-Type: application/zip
+

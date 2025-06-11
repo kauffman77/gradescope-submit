@@ -1,0 +1,7 @@
+test-results/
+*~
+*.bk
+/xxx
+/yyy
+/junk/
+/__pycache__/

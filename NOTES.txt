@@ -1,0 +1,293 @@
+# -*- mode: Org;-*-
+
+#+title: Gradescope Submit Script Development Notes
+
+* Checking Autograder Results
+- GET request to a certain site like:
+  https://www.gradescope.com/courses/618117/assignments/6326806/submissions/336666835
+- Final number might be a redirect from the ~submissions~ script
+- returns ~{"status":"autograder_task_started"}~ when not complete
+
+* Initial Dev
+- Poking around at this
+- Mileage out of using Chrome Devtools, observing the network logs,
+  use "Preserve Log" option as page changes
+- the "submissions" script seems to be the main vehicle to upload
+  stuff
+  - POST request
+  - Content size reflects what is being uploaded
+- Javascript codebase is tough to parse as it looks like it has been
+  generated from compiling (e.g. typescript)
+- Significant progress, working curl prototypes here:
+  file:/home/kauffman/Dropbox/projects/gradescope-submit/
+- Need a way to extract cookies for the session
+  - firefox might provide this but it is tricky due to locking of the
+    database; may not be able to access it while browser is running
+    and initial foray indicated the cookies I need aren't present
+  - chrome encrypts their cookies complicating things
+  - yt-dlp has python code to allow for decoding cookies
+- For web debugging, find that Chrome Dev Tools are inferior for some
+  things to Firefox
+  - FF shows the actual content of form data that is submitted in a
+    POST and allows copies to be made of at least portions of the data
+    formatted
+  - For this see the Network tab in Dev Tools, find a POST XHR
+    communication (filter via ~method:POST~), select it and find the
+    "Reply" section
+  - Chrome shows similar information EXCEPT it does not show the body
+    of the data (no "Reply" section); this is a known limitation which
+    appears to be intentional as displaying that info would take up a
+    lot of space
+- Handling browser keys
+  - https://n8henrie.com/2013/11/use-chromes-cookies-for-easier-downloading-with-python-requests/
+    - Cited by a few other sites as a good small example
+    - Shows the use of Sqlite and Crypto modules in python but at
+      least Crypto looks like
+    - Works on Chrome for Linux/OSX
+  - https://pypi.org/project/browsercookie/ and
+    https://github.com/richardpenman/browsercookie
+    - 3rd party library for dealing with cookies from browsers
+    - indicates compat with a few of platforms/browsers (no safari)
+    - Reasonably maintained (recent contribs)
+    - LGPL, single source file - easy to port over
+    - Unfortunately has a bunch of dependencies; from setup.py:
+      #+BEGIN_SRC python
+          install_requires=['cryptography', 'keyring', 'lz4',
+                            'pywin32; sys_platform == "win32"'],
+      #+END_SRC
+    - cryptography,keyring,lz4,pywin32 are all external libraries
+- Monitoring cookie transfers starting at
+  https://www.gradescope.com/login which responds with these cookies
+  - signed_token :: returned on login, seems to be the login
+    credential which is needed to access; returned after
+    authenticating on the ~login~ page
+  - remember_me :: returned on login, purpose unclear, was not needed
+    for the submit I did earlier
+  - _gradescope_session :: cookie changes each time with a
+    request/response and is meant to chain: use a valid session cookie
+    in a request, a new cookie will be sent in the response that
+    allows the session to continue. From my experience futzing with
+    curl, it does not seem that one must maintain this chain; I used a
+    valid previous session cookie repeatedly to submit and it worked fine
+  email and password are transmitted in plain text via a form
+  submission and POST there
+- POST on https://www.gradescope.com/login was fairy straight-forward;
+  form data was
+  #+BEGIN_SRC text
+  utf8	"✓"
+  authenticity_token	"rvl4ry76o26F9YcSYaaIQj49xAxvluWnsAo2yhgIMu7Ef6WN0TDXX/xNpRW/HpH0J0goPk/ge0+d8mr+968/9Q=="
+  session[email]	"emailaddr@gmail.com"
+  session[password]	"abc123456"
+  session[remember_me]	"0"
+  commit	"Log+In"
+  session[remember_me_sso]	"0"
+  #+END_SRC
+  Troubling is the authenticity token that is needed; not sure where
+  this comes from and will need to figure it out
+- *authenticity_token* comes up on GET to
+  https://www.gradescope.com/account as hidden form inputs, at least a
+  couple of these are in the form which seems to be immediately
+  accessed after the POST to login
+  - value is traced to the specific assignment page which is like
+    https://www.gradescope.com/courses/618117/assignments/5522418/
+  - On that page is a matching meta element in the <head> that is
+    #+BEGIN_SRC html
+    <meta name="csrf-token" content="gi/QWiHknyY44oFrsqA/1V3X3Jhx3ckOhkDtcfgTZK0yaiCs/6Eq+w8NpaIg0zYBHGCY/Yb54ATYtFXoT1JQBQ==" />
+    #+END_SRC
+  - The content is the value that is used for the submissions form as
+    the authenticity_token, likely as a measure to prevent spamming
+  - Have checked and on refreshing the page, this token changes so it
+    is a per page visit token BUT appears to be usable for some time
+    after the first issue as I used the same token multiple times in
+    submitting using curl
+  - TIP: in Firefox dev tools, just do a Ctl-Shift-F search for the
+    content value like ~QWiHkny~ in the network panel and all text
+    will be scanned for the item of interest and show past HTML pages,
+    form contents etc. that contain it, very handy for tracing
+    communication
+
+* Possibilities for browser cookies / credentials
+1. Students log in with the browser then use techniques to obtain the
+   keys/cookies from the browser info
+   - Don't need to reverse engineer the entire protocol for the site,
+     just extract the needed cookies / keys from the browser cache
+   - Seems that 3rd party libraries will be needed to get browser
+     cookies and such
+   - Not clear that one would be able to leverage just the browser
+     cookies here due to the protocol gradescope has which involves
+     obtaining multiple pieces of information in order to submit; need
+     data from login and submission page
+
+2. Direct authentication using python to contact server, get
+   credentials, submit, possibly cache cookies / keys for later use 
+   - More work as must engineer the whole protocol of login /
+     submission but more control; will need a detailed analysis of the
+     source of the authenticity_token / signed_token /
+     _gradescope_session data that comes from the site
+   - Will work on either local or remote, same machine as where
+     submission is going
+   - Can use 3rd party libraries on machines where I can install
+     things like Grace
+   - Python has built-in libraries for http access, dealing somewhat
+     with cookies from communication, reading password information in,
+     etc. so a good start on this
+   - Unclear whether 3rd party libraries will be needed for
+     communication and processing; won't need to worry about the
+     encryption of cookies / keys
+
+#2 starts to seem much more plausible compared to the pain of 1; a
+single Gradescope password prompt is all that is needed to cache
+submits for a time, can cache in a local or global file, can retry
+communications if it seems that cached items are not working anymore
+
+* Rough protocol
+- login :: POST https://www.gradescope.com/login
+  - accepts email / password as POST form data
+  - responds with cookies, most important is ~signed_token~ which
+    gives access to the site; may also wish to retain a
+    ~_gradescope_session~ cookie as this seems like it is needed for
+    the submissions
+- (optional) account :: GET https://www.gradescope.com/account
+  - uses ~signed_token~ for access
+  - html contains some ~authenticity_token~ forms but none of these
+    seem to matter
+  - overall this page does not seem to have anything useful so may
+    just skip it
+- assignment :: GET https://www.gradescope.com/courses/618117/assignments/5522418/
+  - Assignment page 
+  - Requires ~signed_token~ in cookies
+  - May give a 302 "Found" redirect response with a new URL when
+    a submission is already available such as
+    https://www.gradescope.com/courses/618117/assignments/5522418/submissions/336394834
+  - *check when no assignment is submitted that the below is possible*
+  - Contains ~<meta name="csrf-token" content="..." />~ tag with
+    ~authenticity_token~ as the value
+- submissions :: POST https://www.gradescope.com/courses/618117/assignments/5522418/submissions
+  - requires ~signed_token~ cookie
+  - Form data that will upload the submission
+  - ~Content-Type: multipart/form-data; boundary=...~
+  - First part is the upload indicator
+  - Second part is the ~authenticity_token~
+  - Remaining parts are the files with content type
+
+This protocol relies on the "native" email/password for Gradescope
+rather than the school credentials / SSO
+- Initiate a password reset with @terpmail.umd.edu address
+- Set the password and note it for use with the command line tool
+
+* Python Tech
+- requests :: https://requests.readthedocs.io/en/latest/
+  - 3rd party package
+  - installed on Arch via ~python-requests~, seems to have several
+    dependencies like ~python-urllib3~ which ups the complexity
+    somewhat, has numerous packages that require it including core
+    players like cinnamon, inkscape, etc.
+  - Cited in several spots as the [[https://realpython.com/python-requests/]["de facto standard"]]
+  - Excellent docs and intro examples that answer the basic questions
+    I have
+  - Lots of features like cookie handling for sessions, automatic
+    encoding for multipart forms, reasonable interface for post / get 
+  - seems to handle HTTPS seamlessly in examples, no special args
+  - have tried a few examples and it works easily with Gradescope,
+    able to see certain items like the cookies / cookiejar
+- urllib :: https://docs.python.org/3/library/urllib.request.html
+  - standard library so built in
+  - looks somewhat baroque
+  - immediately see trouble in that it requires extra steps to work
+    with HTTPS but may be able to mitigate this
+  - indicates at the top that the requests library is recommended for
+    high-level work, not a rousing endorsement...
+  - allusions to cookie handling but no examples
+- gradescopeapi :: https://pypi.org/project/gradescopeapi/
+  - 3rd party package
+  - indicates it deals with gradescope stuff, has login, something
+    about file upload
+  - uses the requests library including a Session object
+  - worthy of study to see how this works and if some things can be
+    lifted from it or simply use this system
+  - Seems to solve the same problems I need to address: uses
+    bs4.BeautifulSoup to parts HTML fto find the ~csrf-token~ meta tag
+    and insert its contents in the form
+  - Likely can lift considerable code from this package
+
+
+Seems like requests library is the right for the initial foray so will
+bark up that tree first
+
+* <2025-06-10 Tue>: working prototype 
+Got a working prototype of a script together for this in
+file:/home/kauffman/Dropbox/projects/gradescope-submit/gradescope-submit-prototype.py
+and it looks to be pretty robust. Dependencies are ~requests~ and its
+dependencies but otherwise nothing else; will continue to refine it
+
+* Session Transcripts
+Extracted using Firefox Dev Tools during reconnaissance on the
+protocol used by gradescope
+
+** login
+*** Response Cookies
+**** _gradescope_session	
+httpOnly	true
+path	"/"
+samesite	"None"
+secure	true
+value	"eTljWTdLT1krOERkTVFyTnZkbG51TWJ6dDZXNDBVaFlPVkowQjVxWkVUVkdJbHRKcGFPbWREbGZvb0dqcjhQYkhEdzl2TldtM2YzMDB4MWcwOUwwRjFlWW1HUFdITEROKy9vbTdVd1FaL3hCdlZSeis0TGR6dFlsM0Y0eVFsbUZFZFd3bk5PWStSclJmN0x0dEJIa1dDM2ZqS0hTejBWb215eWJRU0JlYVlhSktxYld1Rmo0MXkxaWp0SnhsZ0Rla1hEaWVLMExMVnhPYWNBZmEzNzVBKzdzLzBkQ1BqR3l1dy85VCt2QTdRY2VTbkVJb2JQRmIxZFdVRDJFNDQxbVVDUDk3SU5HODY0c2x2T0M1cHU0RmxHZkNNVytxWjl1NFdRK1FvT0VEVGw3UU16RXBFMW53cEpqSkphNkpwb2JDdVk1d2RIeDI3aXc1R0htN09UTjJCTU5qc1VldndxMWZ1MjBjMnVSRDNqNU9sOE81S3BxUmFiM0Yzb0RpM2ZYLS1IQzNVaVJUTlRnV3BYc0Z3WWpTaXBBPT0=--37d4d9dc43003ebaf3bcdd6af4118552e7a33a4f"
+**** remember_me	
+expires	"2045-06-09T00:11:40.000Z"
+path	"/"
+samesite	"None"
+secure	true
+value	"cHRLTUdIWDVORFA1dWVUTWh2OHZKUT09LS1xRTFuVEU0SzZCYmRzaHZLZHlmNmNRPT0=--d867b83c791eb2f71ccac2cbee4295d21f6f2983"
+**** signed_token
+httpOnly	true
+path	"/"
+samesite	"None"
+secure	true
+value	"dHlOZmZKZmVZNUJCSkFjMmpXMU80c2pDb055Y0lndkdiL3FWY0k2LzJIYz0tLVI0cEJuQWVaTTJYUG8wMVpxTE9KdkE9PQ==--99353dabe52d6d97d1e7b5d513c56d6d3452649f"
+
+*** Request Cookies
+_ga	"GA1.2.564817065.1749352691"
+_gid	"GA1.2.1072695731.1749352691"
+_gradescope_session	"TGJNNi91OTEvcWRtdFh6QlUwcThaSEFUem9YNXFFaHdaV3NQRWZOTzhGOU1oWERWVFdscDhNVFpWdnJiU05jYWlEWjFuUkRkQVorL2NCUmh0Y0RxcEZDbGd1RGNFSWNnc3dPQ3hGMlBoL1h5Vys3N2d5Rkh3QkRyY3VURHh1YnJjNXdTYjlybEdpTis3cy9CRHoyT2lnaW1OZ3A2bXBzYU1mOGIweHpob09NbW5KdDlpbmdQcUh3Mko1djRmVEhpS2ppTWJBay94SENRRUVXZ3FvUjZuM1JRWnM1c3Zkd1d1SXdmU1l0OE9vejlNT00rRXk2OUd2cmJYVlV2bHZpdHBYc1dKUG5maVlFZkY2WmNVRE5KMFE9PS0tVVBOSEo1N0pDY25nN2hZeDdiUDZwQT09--3f780b4656797e57ad3215c4db9eccd43a6af128"
+apt.sid	"AP-1BQVLBSZC216-2-1749427870908-28523944"
+apt.uid	"AP-1BQVLBSZC216-2-1749427870908-26198677.0.0"
+remember_me	"ajA2cWtoYW02MExqMkNGQmhwSFRZdz09LS1HSzIySjJYUFFtUHRpVUkzOFIzc1pBPT0=--43b7693f7179aacce569260be78871e1b7cea306"
+
+** submissions
+*** Response
+**** _gradescope_session	
+httpOnly	true
+path	"/"
+samesite	"None"
+secure	true
+value	"K3Z4anhlTE0va2VHV2NyMkM3NVgzOVBMM2xzVitqTVBhbitVMkZSOFFVaVRkaVkvSnNmVnJPYmp6NlplemkyZm03NnZZMVh3QzU1TWF3ZkhGQlNUYnJWSTEzcCs0c0RtYk9aUUxyckVLNHFlQ0tQVWRDUlFhZmM4QVVLZG5vR3RWY04yTHhLb0NMaGIySjlkVXFIMEttYjZRVXQ1Z0xhb1pUbHE4aWFaem1qeEVjNDRzOFBxYi90amQvWDB0bWhyM1Mzajg0ampveXJyU0c4SnFDYzVEWmlwVHVCY0dDK09DMSswYkJ3dUhsZnZYUTFlMmtubm42Z1dDVU1NVWFRK0c2T3MwMnd6elRxa0kyc3MxMHJaT3lZTlNudDdhSVptd2xUVzdGbEpBamoyN21hdDkxSkt6RDBqTkNJUWxvZ3A3NTFLeHp2VzBjYUs1T3BmM0pRbXZjZUFxVHZ6MmdBSXpzVjdZS1VheGphL2IxWG1QdHQzOW9aejV4c0VaZURFQUpUZVYyODNHallkb2wzYndMUmZBS2hDcTVZUVdLczV1YVJ3Y2Zlb25UM0JmZzA2V3RkbDUvNFpNTnFpcUlpVE1FbkpyY0FpUUlmK20velJQVTZuek00RCtTdEFNRWJ0cXdzSDhXN0VCQ1hGNW01cHB0NWh2TXhnaVIzaFVFMGRGRzk0WS9oTDZ2c3c2R1hMd0s4Q25nPT0tLW5rSFE0MndUZzEwbW1IL1M2SnR6N3c9PQ==--d662bdb199adb55feeb1e69a92d5297117cfe672"
+
+*** Request
+_ga	"GA1.2.564817065.1749352691"
+_gid	"GA1.2.1072695731.1749352691"
+_gradescope_session	"Mm9QcmoyeVdDRmNyZGFMN1FhaysrOXpPOHZWTytObUlQYVpEVWI4QVlaRWU4THNVR3pYTitJUmdQU01ZRUZLYmtXWE9QV1dnVk1JVVllSDEwN3MveGN4MVpjdHVRRU8xZVc4cUpBNEtDL1dKems0Y0lyVTBjL0U5cWpYY1Flenh4Wlk3ZkJlYUp0cFUzTjhCT1Rkek9KdGtEK2N3K2c1Rm9VR0Urclh6TGU0ZEVSd0hsQ29PMGkvSFQ4MmZVamNtcE1kSTd5WEdJcTFYblcwSDkyUjJYZGlMbTB6bGxOUzFPN1ZQQjY4U3BYTk4rN3BUUWMxRFg2Yk04czhlZGpqeVJQV3BjbDFOTU5obFUzTy9tamgxZWdzalhUNm5talVhcS81eVJVWFFnNDlKREpUbDVmeFFodXNSUGxnVWZNemN0bzdDTG40eXZGT1l0ekdsTzdjdExCbG50Ri8vVVhxWit6QURSYW0yVmx5SnhUTFRiQ3N5SGM2MlBWdEEyTWZja2xGRGQ0dmVkMnVUN2p3Qjdnck1ndz09LS1DWVlLZThjS0lJWVJ4VE55dDlkbFp3PT0=--0e28764319429899ef2d9c6672f18f14f72fe3c8"
+apt.sid	"AP-1BQVLBSZC216-2-1749427901485-94583341"
+apt.uid	"AP-1BQVLBSZC216-2-1749427901486-77748137.0.2.35d57c33-5a95-4589-81a1-a9600e866571"
+remember_me	"cHRLTUdIWDVORFA1dWVUTWh2OHZKUT09LS1xRTFuVEU0SzZCYmRzaHZLZHlmNmNRPT0=--d867b83c791eb2f71ccac2cbee4295d21f6f2983"
+signed_token	"dHlOZmZKZmVZNUJCSkFjMmpXMU80c2pDb055Y0lndkdiL3FWY0k2LzJIYz0tLVI0cEJuQWVaTTJYUG8wMVpxTE9KdkE9PQ==--99353dabe52d6d97d1e7b5d513c56d6d3452649f"
+
+** NEW
+*** login
+- signed_token: "U2E5MmRQTGFSTWdHVVM5dlZzNHgrVHN1N3lpOUY3Q1VYSzJpM1IrMDlvTT0tLW1rL2VJYkc0YVRNbUtCVWQ0MkRZVEE9PQ==--badaa9625ab85338e0e5b829f7b328a2ed755183"
+
+*** account
+- authenticity_token 1
+  - DLwgyGL2kEE/mhrew2f5H1/melGgNVaDDRLZZmXwJfIZazySOJUTURpFmR0HVnA9aDbTCjUmJ5V7JLrakYGunA==
+  - <input type="hidden" name="authenticity_token"
+    value="DLwgyGL2kEE/mhrew2f5H1/melGgNVaDDRLZZmXwJfIZazySOJUTURpFmR0HVnA9aDbTCjUmJ5V7JLrakYGunA==" />
+- authenticity_token 2
+  - IR0zCBIOyAT70PvH/ufUVc8aGQnW62yJYCPrSkbR5NPpGLwZjWQoyMr6h4h18WXxfcJP4hk1pSCE+2MKT4OpZA==
+  - <input type="hidden" name="authenticity_token" value="IR0zCBIOyAT70PvH/ufUVc8aGQnW62yJYCPrSkbR5NPpGLwZjWQoyMr6h4h18WXxfcJP4hk1pSCE+2MKT4OpZA==" />
+** 
+utf8=✓
+authenticity_token=vBe+2kgSmeS+ZQQaxB7FJpQaiGJJat8FYIsamb/h734ueifnB7C6yWC9FaVePidWrh/HCj1P0la03uEdgxBn7g==
+session[email]=email@gmail.com
+session[password]=.........
+session[remember_me]=0
+commit=Log In
+session[remember_me_sso]=0
