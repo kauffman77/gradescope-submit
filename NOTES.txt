@@ -2,11 +2,22 @@
 
 #+title: Gradescope Submit Script Development Notes
 
+* TODO Items
+- Test on some remote systems like UMD's GRACE cluster
+- Check that the behavior on multiple "tests" is correct such as 216's
+  projects with multiple problems
+
+* Completed
+
 * Checking Autograder Results
 - GET request to a certain site like:
   https://www.gradescope.com/courses/618117/assignments/6326806/submissions/336666835
 - Final number might be a redirect from the ~submissions~ script
 - returns ~{"status":"autograder_task_started"}~ when not complete
+
+Was able to incorporate this into a loop that repeatedly looks for the
+'processed status' and parses test results after that.
+
 
 * Initial Dev
 - Poking around at this
@@ -216,7 +227,7 @@ bark up that tree first
 
 * <2025-06-10 Tue>: working prototype 
 Got a working prototype of a script together for this in
-file:/home/kauffman/Dropbox/projects/gradescope-submit/gradescope-submit-prototype.py
+file:prototyping/gradescope-submit-prototype.py
 and it looks to be pretty robust. Dependencies are ~requests~ and its
 dependencies but otherwise nothing else; will continue to refine it
 

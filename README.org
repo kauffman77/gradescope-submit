@@ -36,7 +36,7 @@ Submissions of various kinds are supported
 >> gradescope-submit 618117 6326806 lab01-complete.zip  # submit files in a zip file
 >> gradescope-submit 618117 6326806 lab01-complete/     # submit all files in named directory
 >> gradescope-submit 618117 6326806 .                   # submit all files in this directory
->> gradescope-submit 618117 6326806                     # submit to this directory
+>> gradescope-submit 618117 6326806                     # default: submit all files in this directory
 >> gradescope-submit 618117 6326806 file1.c file2.c     # submit specific files together
 #+END_SRC
 
