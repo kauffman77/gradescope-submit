@@ -94,7 +94,7 @@ Contacting Gradescope                                 # no prompts, direct conne
 ** Bash Shell Permanent
 #+BEGIN_SRC sh
 >> echo export GRADESCOPE_EMAIL=student9@terpmail.umd.edu >> ~/.bashrc  # replace with your email
->> export GRADESCOPE_PASSWORD=suPer_seCret7 >> ~/.bashrc                # and password
+>> echo export GRADESCOPE_PASSWORD=suPer_seCret7 >> ~/.bashrc           # and password
 >> source ~/.bashrc
 #+END_SRC
 
@@ -131,4 +131,4 @@ development notes on how the program was constructed and plans for the
 future. Ping me if you'd like to suggest changes.
 
 Happy Hacking!
-- Chris
+-- Chris
