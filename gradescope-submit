@@ -113,35 +113,42 @@ same as you school password. Reset Gradescope passwords at:
   # file_objs are the inner pair so deocorate with the field_name
   submit_files = [("submission[files][]", obj) for obj in file_objs]
 
-  # perform the actual submission
+  # perform the actual submission; adjust the headers to get JSON data
+  # which shows success/failure of submission
+  json_headers = {'Accept': 'application/json, text/javascript'}
   url = f"{GRADESCOPE_URL}/courses/{course_id}/assignments/{assign_id}/submissions"
-  response = session.post(url, data=submit_data, files=submit_files)
+  response = session.post(url, data=submit_data, files=submit_files, headers=json_headers)
   print(f"- {url} {response.reason} ({response.status_code})")
   response.raise_for_status()
-  print(f"- {response.url} submission link")
+  submit_json = response.json()           # parse response as json as was requestd
+  if not submit_json["success"]:          # check for failed submission due
+    print(f"SUBMISSION FAILED: The assignment deadline has likely closed")
+    return False
+
+  # report successful submission
+  submission_url = f"{GRADESCOPE_URL}{submit_json['url']}"
+  print(f"- {submission_url} submission link")
   print("Submit Successful")
 
   if not autograder_wait:                  # not waiting on autograder
     return True
 
   print("\nMonitoring Autograder Progress")
-  # adjust the headers to get JSON data which shows autograder progress / results
-  headers = {'Accept': 'application/json, text/javascript'}
   ag_response = None                       # response on autograder progress
   status_prev = None                       # status from previous iteration
   ag_json = None                           # json data from response, set each iteration
 
   while True:                              # loop until autograder indicates 'processed'
-    ag_response = session.get(response.url,headers=headers)
-    ag_response.raise_for_status()
+    ag_response = session.get(submission_url,headers=json_headers)
+    ag_response.raise_for_status()         # JSON headers show autograder progress / results
     ag_json = ag_response.json()           # parse response as json as was requestd
     status = ag_json['status']             # status indicates progress
     if status != status_prev:              # print on status changes
       print(f"- {status}")
-    status_prev = status
+      status_prev = status
     if status == 'processed':              # break as autograder completed
       break
-    time.sleep(1)
+    time.sleep(1)                          # wait a tick before polling again
 
   print("\nAutograder Results")
   for test in ag_json['results']['tests']: # iterate over each AG test and print summary

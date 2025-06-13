@@ -21,7 +21,42 @@
 - Check that the behavior on multiple "tests" is correct such as 216's
   projects with multiple problems
 
+
 * Completed
+
+* Submit success / JSON API
+- looking at checking for valid submissions
+- If doing submit and using JSON interface get easy feedback
+#+BEGIN_SRC pyton
+...
+  url = f"{GRADESCOPE_URL}/courses/{course_id}/assignments/{assign_id}/submissions"
+  headers = {'Accept': 'application/json, text/javascript'}
+  response = session.post(url, data=submit_data, files=submit_files, headers=headers)
+...
+# when submission is open
+(Pdb) print(response.text)
+{"success":true,"url":"/courses/618117/assignments/6326806/submissions/337026019"}
+
+# when submission is closed
+(Pdb) print(response.text)
+{"success":false,"url":"/courses/618117"}
+#+END_SRC
+
+- Checked and for other sites, it doesn't look like the JSON interface
+  is viable as it does not provide the ~authenticity_token~ that is
+  needed for submission
+#+BEGIN_SRC python
+...
+  url = f"{GRADESCOPE_URL}/courses/{course_id}/assignments/{assign_id}"
+...
+(Pdb) headers = {'Accept': 'application/json, text/javascript'}
+(Pdb) response = session.get(url, headers=headers)
+(Pdb) print(response.text)
+{"status":"processed","results":{"score":null,"tests":[{"name":"Lab Tests","score":1.0,"number":null,"output":"gcc -Wall -Wno-comment -Werror -g  -o hello_c hello_c.c\n./testy test_lab01.org\n===============================\n== test_lab01.org : Lab01 Tests\n== Running 2 / 2 tests\n1) QUIZ: QUESTIONS.txt  : ok\n2) CODE: hello_c output : ok\n===============================\nRESULTS: 1.00 / 1.00 points \n","status":null,"max_score":1.0,"name_format":null,"output_format":null}],"output":null,"output_format":null,"test_name_format":null,"stdout_visibility":"visible","test_output_format":null,"stdout":"Changing to working directory /autograder/submission/solution-lab01-216\nCleaning old test files\nrm -f hello_c  *.o\nrm -rf test-results\nCopying testing files\nRunning tests as user student\nRunning code specific to assignment, results in ag-results/*.json\nMerging results of tests from ag-results/\nCopying test results to Gradescope\nDone","stdout_shown_to_students":true,"error_code":""}}
+# no authenticity token with JSON, can't file new submission
+#+END_SRC
+
+Adding checks for successful / failed submission
 
 * Checking Autograder Results
 - GET request to a certain site like:
