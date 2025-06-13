@@ -3,22 +3,6 @@
 #+title: Gradescope Submit Script Development Notes
 
 * TODO Items
-** Test Remote Systems
-Test on some remote systems like UMD's GRACE cluster
-- Works fine within a Docker image on Ubuntu which has requests
-  library installed
-- Naturally found that Grace doens't have requests installed and
-  will need to find a work-around
-- Installing requests via
-  - ~module load python~
-  - ~pip install requests --user~ 
-  leads to a library problem with libssl on grace
-- Options are to try to
-  - ditch the dependency on ~requests~
-  - find an install solution on GRACE
-  - punt and wait to see what changes I can make to the server setup
-    for UMD - get a sane server installed
-
 * Completed
 ** Submit Success / Failure 
 Add handling for failure to submit due to deadline passing;
@@ -44,7 +28,30 @@ submit : zip
 	./gradescope-submit $(GS_COURSE_ID) $(GS_ASSIGN_ID) $(ZIPNAME)
 #+END_SRC
 
-
+** Test Remote Systems
+Test on some remote systems like UMD's GRACE cluster
+- Works fine within a Docker image on Ubuntu which has requests
+  library installed
+- Tested on zaratan; only needed do a ~module load python~ to ensure
+  that 3rd party libraries are avaiable
+- Naturally found that Grace doens't have requests installed and
+  will need to find a work-around
+- Installing requests via
+  - ~module load python~
+  - ~pip install requests --user~ 
+  leads to a library problem with libssl on grace
+- Options are to try to
+  - ditch the dependency on ~requests~
+  - find an install solution on GRACE
+  - punt and wait to see what changes I can make to the server setup
+    for UMD - get a sane server installed
+- GRACE SUCCESS: install an old version of requests via
+  #+BEGIN_SRC sh
+  >> module load python
+  >> pip install requests==2.18.4 --user
+  #+END_SRC
+  And all seems to work fine
+  
 * Submit success / JSON API
 - looking at checking for valid submissions
 - If doing submit and using JSON interface get easy feedback
