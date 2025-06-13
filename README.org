@@ -119,10 +119,14 @@ defaults so, you know, set an envioronment variable.
 The script depends on the [[https://pypi.org/project/requests/][~requests~ library]] to handle the HTTP
 communications. This library is fairly ubiquitous with many pieces of
 software depending on it so it's likely
-installed on most systems. However, if errors arise about "unable to
-~import requests~" then consult how you might install this on your
-system, likely via an OS package manager or the Python package manager
-~pip~ via a command like ~pip install requests~.
+installed on most systems. However, if errors arise like
+: ModuleNotFoundError: No module named 'requests'
+then consult how you might install this on your system likely via an
+OS package manager or the Python package manager.  A ~pip~ via a
+command like
+- ~pip install requests~ 
+- ~pip install requests --user~
+will often do the trick
 
 * Development and Contributions
 This is a small solo project but contributors are welcome. The source
