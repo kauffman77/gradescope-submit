@@ -1,0 +1,9 @@
+README.md
+gradescope_submit.py
+pyproject.toml
+gradescope_submit.egg-info/PKG-INFO
+gradescope_submit.egg-info/SOURCES.txt
+gradescope_submit.egg-info/dependency_links.txt
+gradescope_submit.egg-info/entry_points.txt
+gradescope_submit.egg-info/requires.txt
+gradescope_submit.egg-info/top_level.txt

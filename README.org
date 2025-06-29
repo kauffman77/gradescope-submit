@@ -1,3 +1,5 @@
+#+title: Gradescope Submit Python Script
+#+options: toc:nil
 * gradescope-submit
 A command line script to upload programming projects to Gradescope.
 
@@ -39,6 +41,16 @@ Submissions of various kinds are supported
 >> gradescope-submit 618117 6326806                     # default: submit all files in this directory
 >> gradescope-submit 618117 6326806 file1.c file2.c     # submit specific files together
 #+END_SRC
+
+** Installation
+There are two ways to install ~gradescope-submit~
+-  Copy the File :: Just copy the file ~gradescope-submit~ to wherever
+  you plan to use it and distribute. It works as a stand-alone script
+  and can be included with assignments. A direct link to the most
+  recent version published on Github is here: [[https://raw.githubusercontent.com/kauffman77/gradescope-submit/refs/heads/master/gradescope-submit][direct link to script.]]
+  Save it, ~wget~ it, do what you've gotta do.
+- Install via pip :: The code is also on [[https://pypi.org/][The Python Package Index
+  (PyPI)]]. Try ~pip install --user gradescope-submit~
 
 * Course / Assignment ID
 The Course and Assignment IDs along with Submission IDs must be passed
@@ -128,6 +140,19 @@ command like
 - ~pip install requests --user~
 will often do the trick
 
+* API
+The code is mainly intended as a stand-alone script BUT has just a few
+functions in it that can be used by other code. If installed via PyPI,
+you should be able to import the module and see the central functions.
+#+BEGIN_SRC sh
+$ python
+>>> import gradescope_submit
+>>> gradescope_submit.submit_assignment
+<function submit_assignment at 0x7f7086ae4400>
+#+END_SRC
+If you're interested in using the functions as a module, let me know
+and we can work together on it.
+
 * License
 ~gradescope-submit~ is released under the terms of the *GNU General
 Public License v3.0-or-later (GPLv3-or-later)*. A copy of the
@@ -136,9 +161,10 @@ repository.
 
 * Development and Contributions
 This is a small solo project but contributors are welcome. The source
-is documented to try to ease understanding and file:NOTES.txt has some
-development notes on how the program was constructed and plans for the
-future. Ping me if you'd like to suggest changes.
+is documented to try to ease understanding and file:NOTES.txt in the
+git repository has some development notes on how the program was
+constructed and plans for the future. Ping me if you'd like to suggest
+changes.
 
 Happy Hacking!
 -- Chris

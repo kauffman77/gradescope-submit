@@ -5,3 +5,4 @@ test-results/
 /yyy
 /junk/
 /__pycache__/
+/pypa-package/__pycache__/

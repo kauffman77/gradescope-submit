@@ -327,7 +327,7 @@ Autograder Results
 
 """
 
-def main(cmd_args):
+def main():
   argparser = argparse.ArgumentParser(description=SHORT_DESCRIPTION,
                                       epilog=LONG_DESCRIPTION,
                                       formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -341,7 +341,7 @@ def main(cmd_args):
   argparser.add_argument("submission",metavar="submission",nargs="*", default=["."],
                          help="directory, zip, or files to submit; defaults to current directory (.)")
 
-  args = argparser.parse_args(cmd_args)
+  args = argparser.parse_args()
 
   file_objs = None
 
@@ -374,4 +374,4 @@ def main(cmd_args):
     sys.exit(2)
 
 if __name__ == '__main__':
-  main(sys.argv[1:])                            # remove script name from args
+  main()
