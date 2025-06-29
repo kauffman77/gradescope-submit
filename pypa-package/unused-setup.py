@@ -1,3 +1,8 @@
+# This (incomplete) file is what the setuptools package historically
+# used to describe a python install. According to sources, the
+# pyproject.toml file is preferred as it is now a standard and used by
+# several of pythons various build/packaging systems.
+
 from setuptools import setup
 
 setup(
