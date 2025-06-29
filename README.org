@@ -128,6 +128,12 @@ command like
 - ~pip install requests --user~
 will often do the trick
 
+* License
+~gradescope-submit~ is released under the terms of the *GNU General
+Public License v3.0-or-later (GPLv3-or-later)*. A copy of the
+GPLv3-or-later is included in the file ~LICENSE~ in the source
+repository.
+
 * Development and Contributions
 This is a small solo project but contributors are welcome. The source
 is documented to try to ease understanding and file:NOTES.txt has some
