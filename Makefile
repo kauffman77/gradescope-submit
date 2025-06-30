@@ -1,5 +1,15 @@
 all : build
 
+help :
+	@echo 'Typical usage is:'
+	@echo '  > make                          # build python package'
+	@echo '  > make build                    # build python package, regenerates README.md if needed'
+	@echo '  > make clean                    # remove build artifacts'
+	@echo '  > make venv                     # start shell in a virtual environment with package available'
+	@echo '  > make clean-venv               # remove virtual environment artifacts'
+	@echo '  > make push                     # clean/build and push to PyPI'
+	@echo '  > make push-testing             # clean/build and push to test.pypi.org'
+
 ################################################################################
 # BUILD TARGETS
 ################################################################################

@@ -7,3 +7,4 @@ test-results/
 /__pycache__/
 /pypa-package/__pycache__/
 /pypa-package/dist/
+/pypa-package/gradescope_submit.egg-info/

@@ -7,6 +7,9 @@ A command line script to upload programming projects to Gradescope.
 This python script allows a user to upload a programming project to
 Gradescope from the command line.
 
+The project homepage is on Github here:
+<https://github.com/kauffman77/gradescope-submit>
+
 
 ## Example Run
 

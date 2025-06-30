@@ -1,0 +1,18 @@
+#+title: History of User Visible Changes
+
+* Version 0.2.2
+- No code / usage changes
+- Updates to comments, docs, added NEWS.org
+
+* Version 0.2.1
+<2025-06-29 Sun>
+- Initial release to PyPI, packaged for distribution and also available
+  as a stand-alone script
+- Reasonably fully featured allowing assignment submission from
+  command line, compatible with current version of Gradescope as near
+  as I can tell
+
+* Version 0.1.1
+<2025-06-11 Wed>
+- Main features implemented and tested using sandbox course on Gradescope
+- Pushed to github

@@ -1,10 +1,14 @@
 #+title: Gradescope Submit Python Script
 #+options: toc:nil
+
 * gradescope-submit
 A command line script to upload programming projects to Gradescope.
 
 This python script allows a user to upload a programming project to
 Gradescope from the command line.
+
+The project homepage is on Github here:
+https://github.com/kauffman77/gradescope-submit
 
 ** Example Run
 #+BEGIN_SRC sh
@@ -87,7 +91,7 @@ already. You can also just plop the ~gradescope-submit~ file down in
 The Course and Assignment IDs along with Submission IDs must be passed
 as command line arguments. These show up in the URLs on Gradescope's
 site:
-#+BEGIN_SRC sh
+#+BEGIN_SRC text
 https://www.gradescope.com/courses/618117/assignments/6326806/submissions/336672290
                                    |                  |                   +-> Submission ID
                                    |                  +-> Assignment ID
