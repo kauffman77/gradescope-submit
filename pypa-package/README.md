@@ -49,13 +49,47 @@ Submissions of various kinds are supported
 
 There are two ways to install `gradescope-submit`
 
--   **Copy the File:** Just copy the file `gradescope-submit` to wherever
-    you plan to use it and distribute. It works as a stand-alone script
-    and can be included with assignments. A direct link to the most
-    recent version published on Github is here: [direct link to script.](https://raw.githubusercontent.com/kauffman77/gradescope-submit/refs/heads/master/gradescope-submit)
-    Save it, `wget` it, do what you've gotta do.
--   **Install via pip:** The code is also on [The Python Package Index
-    (PyPI)](https://pypi.org/). Try `pip install --user gradescope-submit`
+
+### Copy the File
+
+Just copy the file `gradescope-submit` to wherever you plan to use it
+and distribute. It works as a stand-alone script and can be included
+with assignments. A direct link to the most recent version published
+on Github is here: [direct link to script.](https://raw.githubusercontent.com/kauffman77/gradescope-submit/refs/heads/master/gradescope-submit)  Save it, `wget` it, do what
+you've gotta do.
+
+If you are a student and want to use it for a project and are
+relatively new to Linux/UNIX, try the commands:
+
+    >> wget https://raw.githubusercontent.com/kauffman77/gradescope-submit/refs/heads/master/gradescope-submit
+    ...
+    >> chmod u+x gradescope-submit
+    >> ./gradescope-submit --help
+
+If you see a help message, you're in business.
+
+
+### Install via pip
+
+The code is also on [The Python Package Index (PyPI)](https://pypi.org/project/gradescope-submit/). Try ONE of the
+following commands
+
+    >> sudo pip install gradescope-submit    # system-wide install for admins/root user
+    
+    >> pip install gradescope-submit --user  # single-user install for normal users
+
+For folks whose environment doesn't allow installs like this (hello
+Arch Linux users), mess with virtual environments to get things going,
+something along the lines of
+
+    >> python -m venv .venv
+    >> source .venv/bin/activate
+    (.venv) >> pip install gradescope-submit
+
+Of course you'll have to source the virtual environment when you want
+to use it but I'm betting you're accustomed to such things
+already. You can also just plop the `gradescope-submit` file down in
+`/usr/bin` and make it executable.
 
 
 # Course / Assignment ID

@@ -1,2 +1,0 @@
-[console_scripts]
-gradescope-submit = gradescope_submit:main

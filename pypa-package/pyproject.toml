@@ -12,11 +12,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gradescope_submit"
-version = "0.1"
+# version = "0.2.0"
+dynamic = ["version"]
 description = 'Script/Module to upload assignments to Gradescope from the command line'
 readme = "README.md"
 requires-python = ">=3.8"
-dependencies = ["requests"]
+dependencies = ["requests >= 2.25.1"]
 license = "GPL-3.0-or-later"
 keywords = ["gradescope"]
 authors = [{ name = "Chris Kauffman", email = "kauffman77@gmail.com" }]
@@ -58,3 +59,6 @@ test = []
 
 [project.scripts]
 gradescope-submit = "gradescope_submit:main" #install allows running gradescope-submit an executable
+
+[tool.setuptools.dynamic]
+version = {attr = "gradescope_submit.__version__"}

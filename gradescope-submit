@@ -3,6 +3,8 @@
 """gradescope-submit: submit files to Gradescope assignment. Depends
 on the `requests` python library for http communications.""" 
 
+__version__ = "0.2.1"
+
 import sys                      # argv etc
 import os                       # for getcwd()
 import re                       # regexs

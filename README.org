@@ -44,13 +44,44 @@ Submissions of various kinds are supported
 
 ** Installation
 There are two ways to install ~gradescope-submit~
--  Copy the File :: Just copy the file ~gradescope-submit~ to wherever
-  you plan to use it and distribute. It works as a stand-alone script
-  and can be included with assignments. A direct link to the most
-  recent version published on Github is here: [[https://raw.githubusercontent.com/kauffman77/gradescope-submit/refs/heads/master/gradescope-submit][direct link to script.]]
-  Save it, ~wget~ it, do what you've gotta do.
-- Install via pip :: The code is also on [[https://pypi.org/][The Python Package Index
-  (PyPI)]]. Try ~pip install --user gradescope-submit~
+*** Copy the File
+Just copy the file ~gradescope-submit~ to wherever you plan to use it
+and distribute. It works as a stand-alone script and can be included
+with assignments. A direct link to the most recent version published
+on Github is here: [[https://raw.githubusercontent.com/kauffman77/gradescope-submit/refs/heads/master/gradescope-submit][direct link to script.]]  Save it, ~wget~ it, do what
+you've gotta do.
+
+If you are a student and want to use it for a project and are
+relatively new to Linux/UNIX, try the commands:
+#+BEGIN_SRC sh
+>> wget https://raw.githubusercontent.com/kauffman77/gradescope-submit/refs/heads/master/gradescope-submit
+...
+>> chmod u+x gradescope-submit
+>> ./gradescope-submit --help
+#+END_SRC
+If you see a help message, you're in business.
+
+*** Install via pip
+The code is also on [[https://pypi.org/project/gradescope-submit/][The Python Package Index (PyPI)]]. Try ONE of the
+following commands
+#+BEGIN_SRC sh
+>> sudo pip install gradescope-submit    # system-wide install for admins/root user
+
+>> pip install gradescope-submit --user  # single-user install for normal users
+#+END_SRC
+
+For folks whose environment doesn't allow installs like this (hello
+Arch Linux users), mess with virtual environments to get things going,
+something along the lines of
+#+BEGIN_SRC sh
+>> python -m venv .venv
+>> source .venv/bin/activate
+(.venv) >> pip install gradescope-submit
+#+END_SRC
+Of course you'll have to source the virtual environment when you want
+to use it but I'm betting you're accustomed to such things
+already. You can also just plop the ~gradescope-submit~ file down in
+~/usr/bin~ and make it executable.
 
 * Course / Assignment ID
 The Course and Assignment IDs along with Submission IDs must be passed
