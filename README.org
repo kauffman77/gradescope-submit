@@ -196,7 +196,7 @@ repository.
 
 * Development and Contributions
 This is a small solo project but contributors are welcome. The source
-is documented to try to ease understanding and file:NOTES.txt in the
+is documented to try to ease understanding and file:NOTES.org in the
 git repository has some development notes on how the program was
 constructed and plans for the future. Ping me if you'd like to suggest
 changes.
