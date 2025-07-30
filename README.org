@@ -10,6 +10,8 @@ Gradescope from the command line.
 The project homepage is on Github here:
 https://github.com/kauffman77/gradescope-submit
 
+A quick tutorial video is here: https://youtu.be/YhpvAi1cdto
+
 ** Example Run
 #+BEGIN_SRC sh
 >> gradescope-submit 618117 6326806 lab01-complete.zip 
